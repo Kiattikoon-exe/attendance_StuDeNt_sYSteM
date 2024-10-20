@@ -69,7 +69,13 @@
                 view-students
               </p>
               <input type="search" id="student-search" placeholder="Search by ID...">
-              <button type="button" id="search-button">Search</button>
+              <button type="submit" id="search-button">Search</button>
+              <select id="search-type">
+                <option value="">All</option>
+                <option value="id">ID</option>
+                <option value="name">Name</option>
+                <option value="curriculum">Curriculum</option>
+              </select>
             </div>
             
             
@@ -92,9 +98,9 @@
                         <th>Delete</th>
                       </tr>
                     </thead>
-                    <tbody id="student-data">
-                    </tbody>
                     <tbody >
+                    </tbody>
+                    <tbody id="student-data">
                       <% students.forEach(student=> { %>
                         <tr>
                           <!-- ตัวแปรจาก app.js /addStd (prefixes) ใช้ find เพื่อหา table prefix และสร้าง condition ให้ prefix.id ตรงกับ student.prefix_id ?(<<ที่ไหน) ที่ Column prefix -->
@@ -173,49 +179,62 @@
   <!-- FOOTER INCLUDE -->
   
   <script>
+   document.getElementById('search-button').addEventListener('click', function() {
+    const searchTerm = document.getElementById('student-search').value;
+    const searchType = document.getElementById('search-type').value;
 
-const studentSearchInput = document.getElementById('student-search');
-    const studentTableBody = document.getElementById('student-data');
+    // Send a search request to the server
+    fetch(`/searchStudents?term=${searchTerm}&type=${searchType}`)
+      .then(response => response.json())
+      .then(data => {
+        const tableBody = document.getElementById('student-data');
+        tableBody.innerHTML = ''; // Clear previous results
 
-    studentSearchInput.addEventListener('keyup', function(event) {
-      const searchTerm = event.target.value.trim();
-
-      if (searchTerm.length > 0) {
-        // Replace 'students' with your actual data source (array of student objects)
-        const filteredStudent = students.find(student => student.id === searchTerm);
-
-        if (filteredStudent) {
-          // Clear existing table rows
-          studentTableBody.innerHTML = '';
-
-          // Populate table with the filtered student
-          const tableRow = document.createElement('tr');
-
-          // Add table cells with student data
-          const studentIdCell = document.createElement('td');
-          studentIdCell.textContent = filteredStudent.id;
-          tableRow.appendChild(studentIdCell);
-
-          // ... (Add cells for other student data)
-          // Adapt this part to match your student object structure
-
-          const studentNameCell = document.createElement('td');
-          studentNameCell.textContent = `${filteredStudent.firstname} ${filteredStudent.lastname}`;
-          tableRow.appendChild(studentNameCell);
-
-          // ... (Add more table cells as needed)
-
-          studentTableBody.appendChild(tableRow);
+        // If no students are found, show a message
+        if (data.length === 0) {
+          tableBody.innerHTML = '<tr><td colspan="9" class="text-center">No students found</td></tr>';
         } else {
-          // Show a message indicating no students found
-          studentTableBody.innerHTML = '<tr><td colspan="2">No student found.</td></tr>';
-        }
-      } else {
-        // Clear the table if the search term is empty
-        studentTableBody.innerHTML = '';
-      }
-    });
+          // Display the filtered results
+          data.forEach(student => {
+            const formattedDate = new Date(student.date_birth).toLocaleDateString('th-TH', {
+              timeZone: 'Asia/Bangkok'
+            });
 
+            tableBody.innerHTML += `
+              <tr>
+                <td>${student.prefix}</td>
+                <td>${student.firstname} ${student.lastname}</td>
+                <td>${student.curriculum}</td>
+                <td>${student.email}</td>
+                <td>${student.telephone}</td>
+                <td>${formattedDate}</td>
+                <td>${student.sex}</td>
+                <td>
+                  <form action="/updateStudent" method="POST" class="d-inline-block btn-primary btn-sm">
+                    <input type="hidden" name="id" value="${student.id}" />
+                    <button type="button" class="btn btn-primary update-student-btn"
+                      data-student-id="${student.id}">
+                      Update
+                    </button>
+                  </form>
+                </td>
+                <td>
+                  <form action="/deleteStudent" method="POST" class="d-inline-block btn-danger btn-sm">
+                    <input type="hidden" name="id" value="${student.id}" />
+                    <button type="submit" class="btn btn-danger delete-student-btn">
+                      Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            `;
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching students:', error);
+      });
+  });
 
 
 

@@ -209,6 +209,51 @@ app.get('/add-section', async (req, res) => {
 
 });
 
+app.get('/searchStudents', async (req, res) => {
+  const { term, type } = req.query;
+  
+  let query = `
+    SELECT student.id, student.firstname, student.lastname, student.email, student.telephone, student.sex, 
+           student.date_birth, curriculum.curr_name_en as curriculum, prefix.prefix 
+    FROM student 
+    INNER JOIN curriculum ON student.curriculum_id = curriculum.id 
+    INNER JOIN prefix ON student.prefix_id = prefix.id
+  `;
+  
+  const values = [];
+
+  if (type === 'id') {
+    // Partial match on the ID (prefix)
+    query += ' WHERE prefix.prefix ILIKE $1';
+    values.push(`%${term}%`);
+  } else if (type === 'name') {
+    // Partial match on the first or last name
+    query += ' WHERE student.firstname ILIKE $1 OR student.lastname ILIKE $1';
+    values.push(`%${term}%`);
+  } else if (type === 'curriculum') {
+    // Partial match on the curriculum name
+    query += ' WHERE curriculum.curr_name_en ILIKE $1';
+    values.push(`%${term}%`);
+  } else {
+    // If no specific type, search in all fields
+    query += ` WHERE prefix.prefix ILIKE $1 OR student.firstname ILIKE $1 
+               OR student.lastname ILIKE $1 OR curriculum.curr_name_en ILIKE $1`;
+    values.push(`%${term}%`);
+  }
+
+  try {
+    const result = await pool.query(query, values);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching students:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+
+
+
 app.get('/getStudentDetails/:studentId', async (req, res) => {
   const { studentId } = req.params;
 
