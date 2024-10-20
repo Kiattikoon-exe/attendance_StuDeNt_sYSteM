@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta name="description" content />
+  <meta name="author" content />
+  <title>Modern Business - Start Bootstrap Template</title>
+  <!-- Favicon-->
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+  <!-- Custom Google font-->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"
+    rel="stylesheet" />
+  <!-- Bootstrap icons-->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- Core theme CSS (includes Bootstrap)-->
+  <link href="css/styles.css" rel="stylesheet" />
+
+  <style>
+    .dashboard-buttons {
+      display: grid;
+      grid-template-columns: repeat(3);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .dashboard-button {
+      padding: 2rem;
+      font-size: 1rem;
+      text-align: center;
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 0.25rem;
+      transition: all 0.2s ease-in-out;
+      text-decoration: none;
+      color: #212529;
+    }
+
+    .dashboard-button:hover {
+      background-color: #e9ecef;
+      cursor: pointer;
+    }
+  </style>
+
+</head>
+
+<body class="d-flex flex-column">
+  <main class="flex-shrink-0">
+
+
+    <!-- HEADER TEACHER INCLUDE -->
+    <%- include('include/headerTc.ejs') %>
+
+      <section class="py-5">
+        <div class="container px-5">
+          <div class="bg-light rounded-4 py-5 px-4 px-md-5" id="login-form">
+            <div class="text-center mb-5">
+
+              <h1 class="fw-bolder">Teacher: <%= teacherName %>
+                  <%= teacherLName %> Dashboard</h1>
+              <p class="lead fw-normal text-muted mb-0">
+                add-section
+              </p>
+            </div>
+            <div class="row gx-5 justify-content-center">
+              <div class="col-lg-8 col-xl-6">
+                <h2 class="section-header">Manage Section</h2>
+                <form action="/addSection" method="POST">
+                  <div class="mb-3">
+                    <label for="section" class="form-label">Section</label>
+                    <input type="text" class="form-control" id="section" name="section" required />
+                  </div>
+                  <button type="submit" class="btn btn-primary">Add Section</button>
+                </form>
+            
+                <h2 class="mt-4">Section List</h2>
+                <ul class="list-group">
+                  <% sections.forEach(section => { %>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                      Section: <%= section.section %>
+                      <form action="/deleteSection" method="POST" class="float-end">
+                        <input type="hidden" name="id" value="<%= section.id %>" />
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                      </form>
+                    </li>
+                  <% }) %>
+                </ul>
+              </div>
+            </div>
+            
+          </div>
+
+
+           
+
+
+      </section>
+  </main>
+
+  <!-- FOOTER INCLUDE -->
+  <%- include('footer.ejs') %>
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="js/script.js"></script>
+    <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+</body>
+
+</html>

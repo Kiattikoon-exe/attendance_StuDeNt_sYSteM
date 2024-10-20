@@ -1,0 +1,11 @@
+export
+pg_dump -h localhost -U yourUsername -W -d YourDatabase > N:\dir\dir\dir\name.sql
+import
+psql -h localhost -U yourUsername  -W -d YourDatabase < mybackup.sql 
+
+pg_dump -h localhost -U postgres -W -d test > N:\rmutk_work\Express_SQL - Copy\db\test.db
+N:\rmutk_work\Express_SQL - Copy\db
+N:\rmutk_work\Express_SQL - Copy\db
+
+
+backslash nakub

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta name="description" content />
+  <meta name="author" content />
+  <title>Modern Business - Start Bootstrap Template</title>
+  <!-- Favicon-->
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+  <!-- Custom Google font-->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"
+    rel="stylesheet" />
+  <!-- Bootstrap icons-->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- Core theme CSS (includes Bootstrap)-->
+  <link href="css/styles.css" rel="stylesheet" />
+
+  <style>
+    .dashboard-buttons {
+      display: grid;
+      grid-template-columns: repeat(3);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .dashboard-button {
+      padding: 2rem;
+      font-size: 1rem;
+      text-align: center;
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 0.25rem;
+      transition: all 0.2s ease-in-out;
+      text-decoration: none;
+      color: #212529;
+    }
+    .dashboard-button:hover {
+      background-color: #e9ecef;
+      cursor: pointer;
+    }
+  </style>
+
+</head>
+
+<body class="d-flex flex-column">
+  <main class="flex-shrink-0">
+    
+
+    <!-- HEADER TEACHER INCLUDE -->
+    <%- include('include/headerTc.ejs') %>
+
+      <section class="py-5">
+        <div class="container px-5">
+          <div class="bg-light rounded-4 py-5 px-4 px-md-5" id="login-form">
+            <div class="text-center mb-5">
+             
+              <h1 class="fw-bolder">Teacher: <%= teacherName %> <%= teacherLName %>  Dashboard</h1>
+              <p class="lead fw-normal text-muted mb-0">
+               title
+              </p>
+            </div>
+             <div class="row gx-5 justify-content-center">
+              <div class="col-lg-8 col-xl-6">
+                <div class="dashboard-buttons">
+                  <a href="/roll-call" class="dashboard-button">Roll-call student</a>
+                  <a href="/view-students" class="dashboard-button">View student List</a>
+                  <a href="/add-section" class="dashboard-button">Add section</a>
+                  
+                </div>
+             
+              </div>
+            </div>
+          </div>
+
+        
+           
+
+          
+      </section>
+  </main>
+
+  <!-- FOOTER INCLUDE -->
+  <%- include('footer.ejs') %>
+  <!-- Bootstrap core JS-->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Core theme JS-->
+  <script src="js/script.js"></script>
+  <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+</body>
+
+</html>

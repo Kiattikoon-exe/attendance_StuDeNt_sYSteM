@@ -1,0 +1,144 @@
+<style>
+      body, html {
+            height: 100%;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            height: 100vh;
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+        }
+
+        .sidebar .nav-link {
+            color: #333;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: #e9ecef;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        /* Responsive adjustments for small devices (mobile) */
+        @media (max-width: 767.98px) {
+            .sidebar {
+                width: 100%; /* Full width on mobile */
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+
+            /* Adjust content area */
+            .homepage-container {
+                padding: 10px;
+            }
+
+            /* Reduce the font-size for smaller screens */
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .homepage-container p {
+                font-size: 1rem;
+            }
+        }
+
+        /* For tablets */
+        @media (min-width: 768px) and (max-width: 1199.98px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .main-content {
+                margin-left: 200px;
+            }
+
+            .homepage-container {
+                padding: 20px;
+            }
+        }
+
+        /* For large devices (PC) */
+        @media (min-width: 1200px) {
+            .sidebar {
+                width: 250px;
+            }
+
+            .main-content {
+                margin-left: 250px;
+            }
+
+            .homepage-container {
+                padding: 30px;
+            }
+        }
+</style>
+
+<div class="col-auto col-md-3 col-lg-auto px-sm-2 px-0 bg-dark">
+    <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-3 text-white min-vh-100">
+        <a href="" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+            <span class="fs-5 d-none d-sm-inline">Menu</span>
+        </a>
+        <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+            <li class="nav-item">
+                <a href="/homepage" class="nav-link align-middle px-0">
+                    <i class="fs-4 bi-house"></i> <span class="ms-1 d-none d-sm-inline">Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="#submenu1" data-bs-toggle="collapse" class="nav-link px-0 align-middle">
+                    <i class="fs-4 bi-speedometer2"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="/addStd" class="nav-link px-0 align-middle">
+                    <i class="fs-4 bi-people"></i> <span class="ms-1 d-none d-sm-inline">Students Management</span>
+                </a>
+            </li>
+            <li>
+                <a href="/mnUser" class="nav-link px-0 align-middle">
+                    <i class="fs-4 bi-people"></i> <span class="ms-1 d-none d-sm-inline">Teachers Management</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link px-0 align-middle">
+                    <i class="fs-4 bi-table"></i> <span class="ms-1 d-none d-sm-inline">Add Teachers/Students</span>
+                </a>
+            </li>
+        </ul>
+        <hr>
+        <div class="dropdown pb-4">
+            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="https://github.com/mdo.png" alt="hugenerd" width="30" height="30" class="rounded-circle">
+                <span class="d-none d-sm-inline mx-1"><%= teacherName %></span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+                
+                <li><a class="dropdown-item" href="#">Edit Profile</a></li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li><a class="dropdown-item" href="/logout">Sign out</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
