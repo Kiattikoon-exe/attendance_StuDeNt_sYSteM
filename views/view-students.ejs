@@ -171,6 +171,10 @@
   <!-- FOOTER INCLUDE -->
   
   <script>
+    
+    
+
+
     document.getElementById('search-button').addEventListener('click', function() {
   const searchTerm = document.getElementById('student-search').value;
   const searchType = document.getElementById('search-type').value;
@@ -306,6 +310,7 @@ function bindUpdateEventListeners() {
     });
   });
 }
+bindUpdateEventListeners();
 
 // Function to bind delete buttons after search results are updated
 function bindDeleteEventListeners() {
@@ -356,6 +361,7 @@ function bindDeleteEventListeners() {
     });
   });
 }
+bindDeleteEventListeners();
 
   </script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
