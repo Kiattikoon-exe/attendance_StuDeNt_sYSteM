@@ -193,12 +193,17 @@ app.get('/add-section', async (req, res) => {
   }
   try {
     const sectionResult = await pool.query('SELECT * FROM section');
-   
+    const prefixResult = await pool.query('SELECT * FROM prefix');
     const curriculumResult = await pool.query('SELECT * FROM curriculum');  // Query for curriculums
+    const studentResult = await pool.query('SELECT * FROM student');
+    const studentListResult = await pool.query('SELECT * FROM student_list');
    
     res.render( 'add-section.ejs',{
       sections: sectionResult.rows,
+      prefixes: prefixResult.rows,
       curriculums: curriculumResult.rows,  // Ensure curriculums are passed here
+      students: studentResult.rows,
+      studentList: studentListResult.rows,
       teacherName: req.session.user.firstname,
       teacherLName: req.session.user.lastname
     });
@@ -209,15 +214,59 @@ app.get('/add-section', async (req, res) => {
 
 });
 
+
+
+// app.get('/searchStudents', async (req, res) => {
+//   const { term, type } = req.query;
+  
+//   let query = `
+//     SELECT student.id, student.firstname, student.lastname, student.email, student.telephone, student.sex, 
+//            student.date_birth, curriculum.curr_name_en as curriculum, prefix.prefix 
+//     FROM student 
+//     INNER JOIN curriculum ON student.curriculum_id = curriculum.id 
+//     INNER JOIN prefix ON student.prefix_id = prefix.id
+//   `;
+  
+//   const values = [];
+
+//   if (type === 'id') {
+//     // Partial match on the ID (prefix)
+//     query += ' WHERE prefix.prefix ILIKE $1';
+//     values.push(`%${term}%`);
+//   } else if (type === 'name') {
+//     // Partial match on the first or last name
+//     query += ' WHERE student.firstname ILIKE $1 OR student.lastname ILIKE $1';
+//     values.push(`%${term}%`);
+//   } else if (type === 'curriculum') {
+//     // Partial match on the curriculum name
+//     query += ' WHERE curriculum.curr_name_en ILIKE $1';
+//     values.push(`%${term}%`);
+//   } else {
+//     // If no specific type, search in all fields
+//     query += ` WHERE prefix.prefix ILIKE $1 OR student.firstname ILIKE $1 
+//                OR student.lastname ILIKE $1 OR curriculum.curr_name_en ILIKE $1`;
+//     values.push(`%${term}%`);
+//   }
+
+//   try {
+//     const result = await pool.query(query, values);
+//     res.json(result.rows);
+//   } catch (error) {
+//     console.error('Error fetching students:', error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
 app.get('/searchStudents', async (req, res) => {
   const { term, type } = req.query;
   
   let query = `
     SELECT student.id, student.firstname, student.lastname, student.email, student.telephone, student.sex, 
-           student.date_birth, curriculum.curr_name_en as curriculum, prefix.prefix 
+           student.date_birth, curriculum.curr_name_en AS curriculum, prefix.prefix, section.section
     FROM student 
     INNER JOIN curriculum ON student.curriculum_id = curriculum.id 
     INNER JOIN prefix ON student.prefix_id = prefix.id
+    LEFT JOIN student_list ON student.id = student_list.student_id
+    LEFT JOIN section ON student_list.section_id = section.id
   `;
   
   const values = [];
@@ -234,10 +283,15 @@ app.get('/searchStudents', async (req, res) => {
     // Partial match on the curriculum name
     query += ' WHERE curriculum.curr_name_en ILIKE $1';
     values.push(`%${term}%`);
+  } else if (type === 'section') {
+    // Partial match on the section number
+    query += ' WHERE section.section::TEXT ILIKE $1';
+    values.push(`%${term}%`);
   } else {
     // If no specific type, search in all fields
     query += ` WHERE prefix.prefix ILIKE $1 OR student.firstname ILIKE $1 
-               OR student.lastname ILIKE $1 OR curriculum.curr_name_en ILIKE $1`;
+               OR student.lastname ILIKE $1 OR curriculum.curr_name_en ILIKE $1
+               OR section.section::TEXT ILIKE $1`;
     values.push(`%${term}%`);
   }
 
@@ -249,6 +303,7 @@ app.get('/searchStudents', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
 
 
 
@@ -356,6 +411,85 @@ app.post('/addSection', async (req, res) => {
   
 });
 
+// API endpoint to add students to a section
+app.post('/addStudentsToSection', async (req, res) => {
+  const { sectionId, studentIds } = req.body;
+  const client = await pool.connect();
+
+  try {
+      await client.query('BEGIN');
+
+      // Validate input
+      if (!sectionId || !studentIds || !Array.isArray(studentIds) || studentIds.length === 0) {
+          throw new Error('Invalid input parameters');
+      }
+
+      // Check if section exists
+      const sectionCheck = await client.query(
+          'SELECT id FROM section WHERE id = $1',
+          [sectionId]
+      );
+
+      if (sectionCheck.rows.length === 0) {
+          throw new Error('Section not found');
+      }
+
+      // Remove any existing section assignments for these students
+      await client.query(
+          `DELETE FROM student_list 
+           WHERE student_id = ANY($1::int[])`,
+          [studentIds]
+      );
+
+    // Get current timestamp in Thailand timezone (UTC+7)
+    const now = new Date();
+    // Add 7 hours to UTC time to get Thailand time
+    const thailandTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+    // Format the date to match your database format
+    const formattedDate = thailandTime.toISOString().replace('T', ' ').slice(0, 19);
+    
+     // Insert new section assignments with formatted timestamp
+     const insertValues = studentIds.map(studentId => ({
+      text: `
+          INSERT INTO student_list (
+              section_id, 
+              student_id,  
+              status,
+              datecheck,
+              timecheck
+          ) 
+              VALUES (
+              $1, 
+              $2,  
+              $3,
+              $4, 
+              CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Bangkok'
+          )`,
+        values: [sectionId, studentId, 'active', formattedDate]
+  }));
+        // Execute all insert queries
+        for (const query of insertValues) {
+          await client.query(query.text, query.values);
+      }
+
+      await client.query('COMMIT');
+
+      res.json({
+          success: true,
+          message: 'Students successfully added to section'
+      });
+
+  } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('Error in addStudentsToSection:', error);
+      res.status(500).json({
+          success: false,
+          message: error.message || 'An error occurred while adding students to section'
+      });
+  } finally {
+      client.release();
+  }
+});
 
 
 

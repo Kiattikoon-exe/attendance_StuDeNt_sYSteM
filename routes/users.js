@@ -31,6 +31,8 @@ router.get("/", async (req, res) => {
   }
 });
 
+
+
 // INSERT a new user
 router.post("/add", async (req, res) => {
   const { firstname,lastname, email,pwd,status  } = req.body;
