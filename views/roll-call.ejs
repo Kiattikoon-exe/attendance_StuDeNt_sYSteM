@@ -263,120 +263,112 @@
                     });
                 });
 
-                // Handle section change and reload students when the section is selected
+                // Modify the section change handler
                 document.getElementById('section-select').addEventListener('change', function () {
                     const selectedSectionId = this.value;
-
-                    // Fetch students for the selected section using AJAX
                     fetch(`/searchStudents?type=section&term=${selectedSectionId}`)
                         .then(response => response.json())
                         .then(data => {
                             const tableBody = document.getElementById('student-data');
                             tableBody.innerHTML = ''; // Clear previous results
 
-                            // If no students are found, show a message
-                            if (data.length === 0) {
+                            // Get unique students
+                            const uniqueStudents = getUniqueStudents(data);
+
+                            if (uniqueStudents.length === 0) {
                                 tableBody.innerHTML = '<tr><td colspan="9" class="text-center">No students found</td></tr>';
                             } else {
-                                // Display the filtered results
-                                data.forEach(student => {
-                                    const formattedDate = new Date(student.date_birth).toLocaleDateString('th-TH', {
-                                        timeZone: 'Asia/Bangkok'
-                                    });
-
+                                uniqueStudents.forEach(student => {
                                     tableBody.innerHTML += `
-                                <tr>
-                                    <td><input type="checkbox" class="student-checkbox" data-student-id="${student.id}"></td>
-                                    <td>${student.section || 'N/A'}</td>
-                                    <td>${student.prefix}</td>
-                                    <td>${student.firstname} ${student.lastname}</td>
-                                    <td>${student.curriculum}</td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <input type="radio" class="btn-check" name="status_${student.id}" id="present_${student.id}" value="เข้าเรียน" autocomplete="off">
-                                            <label class="btn btn-outline-success" for="present_${student.id}">เข้าเรียน</label>
-                                            
-                                            <input type="radio" class="btn-check" name="status_${student.id}" id="late_${student.id}" value="สาย" autocomplete="off">
-                                            <label class="btn btn-outline-warning" for="late_${student.id}">สาย</label>
-                                            
-                                            <input type="radio" class="btn-check" name="status_${student.id}" id="leave_${student.id}" value="ลา" autocomplete="off">
-                                            <label class="btn btn-outline-info" for="leave_${student.id}">ลา</label>
+                            <tr>
+                                <td><input type="checkbox" class="student-checkbox" data-student-id="${student.id}"></td>
+                                <td>${student.section || 'N/A'}</td>
+                                <td>${student.prefix}</td>
+                                <td>${student.firstname} ${student.lastname}</td>
+                                <td>${student.curriculum}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <input type="radio" class="btn-check" name="status_${student.id}" id="present_${student.id}" value="เข้าเรียน" autocomplete="off">
+                                        <label class="btn btn-outline-success" for="present_${student.id}">เข้าเรียน</label>
+                                        
+                                        <input type="radio" class="btn-check" name="status_${student.id}" id="late_${student.id}" value="สาย" autocomplete="off">
+                                        <label class="btn btn-outline-warning" for="late_${student.id}">สาย</label>
+                                        
+                                        <input type="radio" class="btn-check" name="status_${student.id}" id="leave_${student.id}" value="ลา" autocomplete="off">
+                                        <label class="btn btn-outline-info" for="leave_${student.id}">ลา</label>
 
-                                            <input type="radio" class="btn-check" name="status_${student.id}" id="absent_${student.id}" value="ขาด" autocomplete="off">
-                                            <label class="btn btn-outline-danger" for="absent_${student.id}">ขาด</label>
-                                        </div>
-                                    </td>
-                                </tr>
-                            `;
+                                        <input type="radio" class="btn-check" name="status_${student.id}" id="absent_${student.id}" value="ขาด" autocomplete="off">
+                                        <label class="btn btn-outline-danger" for="absent_${student.id}">ขาด</label>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
                                 });
-
-                                // Re-bind event listeners for dynamically added elements
-                                bindUpdateEventListeners();
-                                bindDeleteEventListeners();
                             }
+
+                            // Re-bind event listeners
+                            bindUpdateEventListeners();
+                            bindDeleteEventListeners();
                         })
                         .catch(error => {
                             console.error('Error fetching students:', error);
                         });
                 });
 
-                // Handle search button click to search for students based on the selected criteria
-                document.getElementById('search-button').addEventListener('click', function () {
-                    const searchTerm = document.getElementById('student-search').value;
-                    const searchType = document.getElementById('search-type').value;
+                  // Modify the search handler similarly
+    document.getElementById('search-button').addEventListener('click', function () {
+        const searchTerm = document.getElementById('student-search').value;
+        const searchType = document.getElementById('search-type').value;
 
-                    // Send a search request to the server using AJAX
-                    fetch(`/searchStudents?term=${searchTerm}&type=${searchType}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            const tableBody = document.getElementById('student-data');
-                            tableBody.innerHTML = ''; // Clear previous results
+        fetch(`/searchStudents?term=${searchTerm}&type=${searchType}`)
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('student-data');
+                tableBody.innerHTML = '';
+                
+                // Get unique students
+                const uniqueStudents = getUniqueStudents(data);
 
-                            // If no students are found, show a message
-                            if (data.length === 0) {
-                                tableBody.innerHTML = '<tr><td colspan="9" class="text-center">No students found</td></tr>';
-                            } else {
-                                // Display the filtered results
-                                data.forEach(student => {
-                                    const formattedDate = new Date(student.date_birth).toLocaleDateString('th-TH', {
-                                        timeZone: 'Asia/Bangkok'
-                                    });
+                if (uniqueStudents.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="9" class="text-center">No students found</td></tr>';
+                } else {
+                    uniqueStudents.forEach(student => {
+                        // Same table row HTML as above
+                        tableBody.innerHTML += `
+                            <tr>
+                                <td><input type="checkbox" class="student-checkbox" data-student-id="${student.id}"></td>
+                                <td>${student.section || 'N/A'}</td>
+                                <td>${student.prefix}</td>
+                                <td>${student.firstname} ${student.lastname}</td>
+                                <td>${student.curriculum}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <input type="radio" class="btn-check" name="status_${student.id}" id="present_${student.id}" value="เข้าเรียน" autocomplete="off">
+                                        <label class="btn btn-outline-success" for="present_${student.id}">เข้าเรียน</label>
+                                        
+                                        <input type="radio" class="btn-check" name="status_${student.id}" id="late_${student.id}" value="สาย" autocomplete="off">
+                                        <label class="btn btn-outline-warning" for="late_${student.id}">สาย</label>
+                                        
+                                        <input type="radio" class="btn-check" name="status_${student.id}" id="leave_${student.id}" value="ลา" autocomplete="off">
+                                        <label class="btn btn-outline-info" for="leave_${student.id}">ลา</label>
 
-                                    tableBody.innerHTML += `
-                                <tr>
-                                    <td><input type="checkbox" class="student-checkbox" data-student-id="${student.id}"></td>
-                                    <td>${student.section || 'N/A'}</td>
-                                    <td>${student.prefix}</td>
-                                    <td>${student.firstname} ${student.lastname}</td>
-                                    <td>${student.curriculum}</td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <input type="radio" class="btn-check" name="status_${student.id}" id="present_${student.id}" value="เข้าเรียน" autocomplete="off">
-                                            <label class="btn btn-outline-success" for="present_${student.id}">เข้าเรียน</label>
-                                            
-                                            <input type="radio" class="btn-check" name="status_${student.id}" id="late_${student.id}" value="สาย" autocomplete="off">
-                                            <label class="btn btn-outline-warning" for="late_${student.id}">สาย</label>
-                                            
-                                            <input type="radio" class="btn-check" name="status_${student.id}" id="leave_${student.id}" value="ลา" autocomplete="off">
-                                            <label class="btn btn-outline-info" for="leave_${student.id}">ลา</label>
-
-                                            <input type="radio" class="btn-check" name="status_${student.id}" id="absent_${student.id}" value="ขาด" autocomplete="off">
-                                            <label class="btn btn-outline-danger" for="absent_${student.id}">ขาด</label>
-                                        </div>
-                                    </td>
-                                </tr>
-                            `;
-                                });
-
-                                // Re-bind event listeners for dynamically added elements
-                                bindUpdateEventListeners();
-                                bindDeleteEventListeners();
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error fetching students:', error);
-                        });
-                });
+                                        <input type="radio" class="btn-check" name="status_${student.id}" id="absent_${student.id}" value="ขาด" autocomplete="off">
+                                        <label class="btn btn-outline-danger" for="absent_${student.id}">ขาด</label>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+                
+                // Re-bind event listeners
+                bindUpdateEventListeners();
+                bindDeleteEventListeners();
+            })
+            .catch(error => {
+                console.error('Error fetching students:', error);
+            });
+    });
 
                 // Function to bind update buttons after search results are updated
                 function bindUpdateEventListeners() {
@@ -482,6 +474,19 @@
                     });
                 });
             });
+            // Add this function to remove duplicates while preserving attendance history
+            function getUniqueStudents(students) {
+                const uniqueStudents = new Map();
+
+                students.forEach(student => {
+                    // Use student ID as the key to prevent duplicates
+                    if (!uniqueStudents.has(student.id)) {
+                        uniqueStudents.set(student.id, student);
+                    }
+                });
+
+                return Array.from(uniqueStudents.values());
+            }
         </script>
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

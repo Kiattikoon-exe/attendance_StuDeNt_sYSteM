@@ -318,7 +318,19 @@
     });
 });
 
-
+// Add this function to remove duplicates while preserving attendance history
+function getUniqueStudents(students) {
+    const uniqueStudents = new Map();
+    
+    students.forEach(student => {
+        // Use student ID as the key to prevent duplicates
+        if (!uniqueStudents.has(student.id)) {
+            uniqueStudents.set(student.id, student);
+        }
+    });
+    
+    return Array.from(uniqueStudents.values());
+}
       document.getElementById('search-button').addEventListener('click', function () {
         const searchTerm = document.getElementById('student-search').value;
         const searchType = document.getElementById('search-type').value;
@@ -329,19 +341,15 @@
           .then(data => {
             const tableBody = document.getElementById('student-data');
             tableBody.innerHTML = ''; // Clear previous results
-
+            
+            const uniqueStudents = getUniqueStudents(data);
             // If no students are found, show a message
-            if (data.length === 0) {
-              tableBody.innerHTML = '<tr><td colspan="9" class="text-center">No students found</td></tr>';
-            } else {
-              // Display the filtered results
-              data.forEach(student => {
-                const formattedDate = new Date(student.date_birth).toLocaleDateString('th-TH', {
-                  timeZone: 'Asia/Bangkok'
-                });
-
-                tableBody.innerHTML += `
-            <tr>
+            if (uniqueStudents.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="9" class="text-center">No students found</td></tr>';
+                } else {
+                    uniqueStudents.forEach(student => {
+                        tableBody.innerHTML += `
+                       <tr>
               <td><input type="checkbox" class="student-checkbox" data-student-id="${student.id}"></td>
               <td>${student.section || 'N/A'}</td>
               <td>${student.prefix}</td>
@@ -370,10 +378,11 @@
                 </form>
               </td>
             </tr>
-          `;
-              });
+                        `;
+                    });
 
               // Bind event listeners for the dynamically added update buttons
+           
               bindUpdateEventListeners();
 
               // Bind event listeners for the dynamically added delete buttons
