@@ -155,10 +155,20 @@ app.get('/roll-call',async (req, res) => {
   if (!req.session.user) {
     return res.redirect('/'); // Redirect to login if not logged in
   }
+    const sectionResult = await pool.query('SELECT * FROM section');
+    const prefixResult = await pool.query('SELECT * FROM prefix');
+    const curriculumResult = await pool.query('SELECT * FROM curriculum');  // Query for curriculums
+    const studentResult = await pool.query('SELECT * FROM student');
+    const studentListResult = await pool.query('SELECT * FROM student_list');
   
   res.render( 'roll-call.ejs',{
-    teacherName: req.session.user.firstname,
-    teacherLName: req.session.user.lastname
+      sections: sectionResult.rows,
+      prefixes: prefixResult.rows,
+      curriculums: curriculumResult.rows,  // Ensure curriculums are passed here
+      students: studentResult.rows,
+      studentList: studentListResult.rows,
+      teacherName: req.session.user.firstname,
+      teacherLName: req.session.user.lastname
   });
 });
 
@@ -449,23 +459,11 @@ app.post('/addStudentsToSection', async (req, res) => {
     const formattedDate = thailandTime.toISOString().replace('T', ' ').slice(0, 19);
     
      // Insert new section assignments with formatted timestamp
+     // insert into ,tatus,datecheck,timecheck  values ,$3,$4,CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Bangkok' values , 'active', formattedDate
      const insertValues = studentIds.map(studentId => ({
-      text: `
-          INSERT INTO student_list (
-              section_id, 
-              student_id,  
-              status,
-              datecheck,
-              timecheck
-          ) 
-              VALUES (
-              $1, 
-              $2,  
-              $3,
-              $4, 
-              CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Bangkok'
-          )`,
-        values: [sectionId, studentId, 'active', formattedDate]
+      text: `INSERT INTO student_list (section_id, student_id) 
+             VALUES ($1, $2)`,
+      values: [sectionId, studentId]
   }));
         // Execute all insert queries
         for (const query of insertValues) {
@@ -485,6 +483,69 @@ app.post('/addStudentsToSection', async (req, res) => {
       res.status(500).json({
           success: false,
           message: error.message || 'An error occurred while adding students to section'
+      });
+  } finally {
+      client.release();
+  }
+});
+
+app.post('/saveAttendance', async (req, res) => {
+  const { sectionId, attendanceDate, attendanceTime, attendanceData } = req.body;
+  const client = await pool.connect();
+
+  try {
+      await client.query('BEGIN');
+
+      // Validate input
+      if (!sectionId || !attendanceDate || !attendanceTime || !Array.isArray(attendanceData)) {
+          throw new Error('Invalid input parameters');
+      }
+
+      // Check if section exists
+      const sectionCheck = await client.query(
+          'SELECT id FROM section WHERE id = $1',
+          [sectionId]
+      );
+
+      if (sectionCheck.rows.length === 0) {
+          throw new Error('Section not found');
+      }
+
+      // Combine date and time
+      const dateTime = `${attendanceDate} ${attendanceTime}`;
+
+      // Insert attendance records
+      for (const attendance of attendanceData) {
+          await client.query(
+              `UPDATE student_list 
+               SET status = $1, 
+                   datecheck = $2,
+                   timecheck = $3
+               WHERE section_id = $4 
+               AND student_id = $5`,
+              [
+                  attendance.status,
+                  attendanceDate,
+                  attendanceTime,
+                  sectionId,
+                  attendance.studentId
+              ]
+          );
+      }
+
+      await client.query('COMMIT');
+
+      res.json({
+          success: true,
+          message: 'Attendance successfully recorded'
+      });
+
+  } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('Error in saveAttendance:', error);
+      res.status(500).json({
+          success: false,
+          message: error.message || 'An error occurred while saving attendance'
       });
   } finally {
       client.release();
