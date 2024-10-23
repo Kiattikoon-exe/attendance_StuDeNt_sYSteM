@@ -46,7 +46,7 @@
     }
 
     .table-responsive {
-      height: 400px;
+      height: 450px;
       /* Adjust the height as needed */
       overflow-y: scroll;
     }
@@ -71,10 +71,9 @@
           <div class="bg-light rounded-4 py-5 px-5 px-md-5" id="login-form">
             <div class="text-center mb-2">
 
-              <h1 class="fw-bolder">Teacher: <%= teacherName %>
-                  <%= teacherLName %> Dashboard</h1>
+              <h1 class="fw-bolder">Student Management</h1>
               <p class="lead fw-normal text-muted mb-0">
-                add-section
+                <%= teacherName %> <%= teacherName%> | <a href="/logout">Logout</a>
               </p>
             </div>
 
@@ -348,6 +347,10 @@
               <td>${student.prefix}</td>
               <td>${student.firstname} ${student.lastname}</td>
               <td>${student.curriculum}</td>
+              <td>${student.email}</td>
+              <td>${student.telephone}</td>
+              <td>${new Date(student.date_birth).toLocaleDateString('en-TH', { timeZone: 'Asia/Bangkok' })}</td>
+              <td>${student.sex}</td>
               
               
               <td>

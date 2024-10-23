@@ -187,7 +187,7 @@ app.get('/view-students', async (req, res) => {
   }
 });
 
-app.get('/add-section', async (req, res) => {
+app.get('/student-management', async (req, res) => {
   if (!req.session.user) {
     return res.redirect('/'); // Redirect to login if not logged in
   }
@@ -198,7 +198,7 @@ app.get('/add-section', async (req, res) => {
     const studentResult = await pool.query('SELECT * FROM student');
     const studentListResult = await pool.query('SELECT * FROM student_list');
    
-    res.render( 'add-section.ejs',{
+    res.render( 'student-management.ejs',{
       sections: sectionResult.rows,
       prefixes: prefixResult.rows,
       curriculums: curriculumResult.rows,  // Ensure curriculums are passed here
@@ -400,7 +400,7 @@ app.post('/addSection', async (req, res) => {
     if (userRole === 'admin') {
       res.redirect('/addStd');
     } else if (userRole === 'teacher') {
-      res.redirect('/add-section');
+      res.redirect('/student-management');
     } else {
       res.redirect('/');
     }
@@ -595,7 +595,7 @@ app.post('/deleteSection', async (req, res) => {
     if (userRole === 'admin') {
       res.redirect('/addStd');
     } else if (userRole === 'teacher') {
-      res.redirect('/add-section');
+      res.redirect('/student-management');
     } else {
       res.redirect('/');
     }
