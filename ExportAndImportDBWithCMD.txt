@@ -4,6 +4,7 @@ import
 psql -h localhost -U yourUsername  -W -d YourDatabase < mybackup.sql 
 
 pg_dump -h localhost -U postgres -W -d test > N:\rmutk_work\Express_SQL - Copy\db\test.db
+pg_dump -h localhost -U postgres -W -d checkstd > N:\rmutk_work\CheckInStd\db\23102024DBBU.sql
 N:\rmutk_work\Express_SQL - Copy\db
 N:\rmutk_work\Express_SQL - Copy\db
 
