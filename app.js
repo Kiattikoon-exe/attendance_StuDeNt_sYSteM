@@ -53,6 +53,114 @@ app.get("/", (req, res) => {
   }
   res.render(path.join(staticPath, "index.ejs"));
 });
+// API endpoint to get a student by 
+app.get('/searchByPrefix', async (req, res) => {
+  const prefix = req.query.prefix;
+  try {
+      let query;
+      let queryParams = [];
+
+      if (prefix) {
+          query = `
+              SELECT 
+                  section.section,
+                  prefix.prefix, 
+                  student.firstname, 
+                  student.lastname, 
+                  curriculum.curr_name_en AS curriculum, 
+                  student_list.status, 
+                  student_list.datecheck, 
+                  student_list.timecheck
+              FROM  
+                  student_list
+              JOIN 
+                  student ON student_list.student_id = student.id
+              JOIN 
+                  prefix ON student.prefix_id = prefix.id
+              JOIN 
+                  curriculum ON student.curriculum_id = curriculum.id
+              JOIN 
+                  section ON student_list.section_id = section.id
+              WHERE 
+                  prefix.prefix = $1;  -- Search by prefix
+          `;
+          queryParams = [prefix];
+      } else {
+          query = `
+              SELECT 
+                  section.section,
+                  prefix.prefix, 
+                  student.firstname, 
+                  student.lastname, 
+                  curriculum.curr_name_en AS curriculum, 
+                  student_list.status, 
+                  student_list.datecheck, 
+                  student_list.timecheck
+              FROM  
+                  student_list
+              JOIN 
+                  student ON student_list.student_id = student.id
+              JOIN 
+                  prefix ON student.prefix_id = prefix.id
+              JOIN 
+                  curriculum ON student.curriculum_id = curriculum.id
+              JOIN 
+                  section ON student_list.section_id = section.id;
+          `;
+      }
+
+      const result = await pool.query(query, queryParams);
+      res.json(result.rows);
+
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'An error occurred' });
+  }
+});
+
+
+
+app.get('/searchById', async (req, res) => {
+  const studentId = req.query.studentId;
+  try {
+      const query = `
+          SELECT 
+              section.section,
+              prefix.prefix, 
+              student.firstname, 
+              student.lastname, 
+              curriculum.curr_name_en AS curriculum, 
+              student_list.status, 
+              student_list.datecheck, 
+              student_list.timecheck
+          FROM  
+              student_list
+          JOIN 
+              student 
+              ON student_list.student_id = student.id
+          JOIN 
+              prefix 
+              ON student.prefix_id = prefix.id
+          JOIN 
+              curriculum 
+              ON student.curriculum_id = curriculum.id
+          JOIN 
+              section 
+              ON student_list.section_id = section.id
+          WHERE 
+              student.id = $1;
+        `;
+          const result = await pool.query(query, [studentId]);
+          res.json(result.rows);
+      
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'An error occurred' });
+  }
+});
+
+
+
 
 // app.get('/teacherSys', (req, res) => {
 //   console.log(req.session.user);
@@ -161,6 +269,16 @@ app.get("/roll-call", async (req, res) => {
     teacherLName: req.session.user.lastname,
   });
 });
+app.get('/getStudentList', async (req, res) => {
+  try {
+    const studentListData = await pool.query("SELECT * FROM student_list");
+    res.json(studentListData);
+  } catch (error) {
+    console.error('Error fetching student list:', error);
+    res.status(500).json({ error: 'Failed to fetch student list' });
+  }
+});
+
 
 app.get("/view-students", async (req, res) => {
   if (!req.session.user) {
@@ -390,8 +508,28 @@ app.get("/getStudentDetails/:studentId", async (req, res) => {
   }
 });
 
-app.get("/rollCallStd", (req, res) => {
-  res.render(path.join(staticPath, "rollCallStd.ejs"));
+app.get("/rollCallStd", async (req, res) => {
+  try {
+    const sectionResult = await pool.query("SELECT * FROM section");
+    const prefixResult = await pool.query("SELECT * FROM prefix");
+    const curriculumResult = await pool.query("SELECT * FROM curriculum"); // Query for curriculums
+    const studentResult = await pool.query("SELECT * FROM student");
+    const studentListResult = await pool.query("SELECT * FROM student_list");
+    // Pass curriculums and other data to the EJS template
+    res.render("rollCallStd", {
+      sections: sectionResult.rows,
+      prefixes: prefixResult.rows,
+      curriculums: curriculumResult.rows, // Ensure curriculums are passed here
+      students: studentResult.rows,
+      studentList: studentListResult.rows,
+      // teacherName: req.session.user.firstname,
+      // teacherLName: req.session.user.lastname,
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+  // res.render(path.join(staticPath, "rollCallStd.ejs"));
 });
 
 app.get("/mnUser", (req, res) => {
@@ -490,7 +628,7 @@ app.post("/addStudentsToSection", async (req, res) => {
       .slice(0, 19);
 
     // Insert new section assignments with formatted timestamp
-    // insert into ,tatus,datecheck,timecheck  values ,$3,$4,CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Bangkok' values , 'active', formattedDate
+    // insert into ,status,datecheck,timecheck  values ,$3,$4,CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Bangkok' values , 'active', formattedDate
     const insertValues = studentIds.map((studentId) => ({
       text: `INSERT INTO student_list (section_id, student_id) 
              VALUES ($1, $2)`,
@@ -550,7 +688,7 @@ app.post("/saveAttendance", async (req, res) => {
 
     // Combine date and time
     const dateTime = `${attendanceDate} ${attendanceTime}`;
-
+     // insert into ,status,datecheck,timecheck  values ,$3,$4,CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Bangkok' values , 'active', formattedDate
     // Insert attendance records
     for (const attendance of attendanceData) {
       await client.query(
